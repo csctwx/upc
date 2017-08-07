@@ -1,0 +1,28 @@
+body {
+	font-family: 'Cabin', sans-serif !important;
+	color: #545454 !important;
+}
+
+#ajouter {
+	display: none;
+}
+
+table tr td {
+	padding: 6px !important;
+}
+
+dd {
+	border-bottom: 1px dotted #c0c0c0 !important; 
+	padding: 0 0 0 15px;
+}
+
+#upcTable {
+	font-size: 15px !important;
+}
+
+.header h3 {
+	width: 314px;
+	height: 66px;
+	color: transparent;
+	background: url(Battat-corporate-logo.png) no-repeat;
+}
