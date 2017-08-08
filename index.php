@@ -1,15 +1,6 @@
 <?php
-// User IP
-$userIp = $_SERVER['SERVER_ADDR'];
-
-if (in_array(substr($userIp, 0, strrpos($userIp, '.')), array('10.10.10', '192.168.0'))) {
-  setcookie("BattatUPC", 1, time()+86400);
-}
-else {
-  setcookie("BattatUPC", 0, time()+86400);
-}
-
-if ($_COOKIE["BattatUPC"] === 0) { echo "<h2>Maison Battat Inc.</h2>"; exit; }
+require_once('lib/utils.php');  
+require_once('lib/header.php');
 
 /*****************************************
  * Create UPC and Battat Number
@@ -60,20 +51,7 @@ if ($_COOKIE["BattatUPC"] === 0) { echo "<h2>Maison Battat Inc.</h2>"; exit; }
  * 2. UPC
  *    SELECT random UPC in products and add 1. If != exists, OK
  *
- *****************************************/
-  /* CONNEXION */
-  $host = "127.0.0.1";
-  $db = "upc";
-  $user = "upc";
-  $password = "upc";
-  $charset = "utf8";
-  $dsn = "mysql:host=".$host.";dbname=".$db.";charset=".$charset;
-  $opt = [
-      PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-      PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-      PDO::ATTR_EMULATE_PREPARES   => false,
-  ];
-  $pdo = new PDO($dsn, $user, $password, $opt);
+ *****************************************/  
 
 /* Verify if logged in */
 $cookie = $_COOKIE["BattatAdmin"];
@@ -152,7 +130,7 @@ $cookie = $_COOKIE["BattatAdmin"];
           <div class="col-md-3 form-group">
             <label for="pm"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;&nbsp;Project Manager</label>
             <select id="pm" name="pm" class="form-control">
-              <option value="0">- Select -</option>
+              <!--option value="0">- Select -</option-->
               <?php
               $stmt = $pdo->query("SELECT * FROM product_managers ORDER BY name");
               while ($row = $stmt->fetch()) {
@@ -164,7 +142,7 @@ $cookie = $_COOKIE["BattatAdmin"];
           <div class="col-md-3 form-group">
             <label for="brand"><span class="glyphicon glyphicon-registration-mark" aria-hidden="true"></span>&nbsp;&nbsp;Brand</label>
                <select id="brand" name="brand" class="form-control">
-                <option value="0">- Select -</option>
+                <!--option value="0">- Select -</option-->
                 <?php
                 $stmt = $pdo->query("SELECT * FROM product_lines ORDER BY catName");
                 while ($row = $stmt->fetch()) {
@@ -176,7 +154,7 @@ $cookie = $_COOKIE["BattatAdmin"];
           <div class="col-md-3 form-group">
             <label for="pi"><span class="glyphicon glyphicon-gift" aria-hidden="true"></span>&nbsp;&nbsp;Pack Information</label>
                <select id="pi" name="pi" class="form-control">
-                <option value="na">- Select -</option>
+                <option value="">- Select -</option>
                 <?php
                 $stmt = $pdo->query("SELECT * FROM pack_info ORDER BY code");
                 while ($row = $stmt->fetch()) {
@@ -188,7 +166,7 @@ $cookie = $_COOKIE["BattatAdmin"];
           <div class="col-md-3 form-group">
             <label for="pl"><span class="glyphicon glyphicon-sunglasses" aria-hidden="true"></span>&nbsp;&nbsp;Private Label</label>
                <select id="pl" name="pl" class="form-control">
-                <option value="na">- Select -</option>
+                <option value="">- Select -</option>
                 <?php
                 $stmt = $pdo->query("SELECT * FROM private_label ORDER BY label");
                 while ($row = $stmt->fetch()) {

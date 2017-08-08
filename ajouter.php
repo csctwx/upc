@@ -1,29 +1,6 @@
 <?php
-// User IP
-$userIp = $_SERVER['SERVER_ADDR'];
-
-if (in_array(substr($userIp, 0, strrpos($userIp, '.')), array('10.10.10', '192.168.0'))) {
-  setcookie("BattatUPC", 1, time()+86400);
-}
-else {
-  setcookie("BattatUPC", 0, time()+86400);
-}
-
-if ($_COOKIE["BattatUPC"] === 0) { echo "<h2>Maison Battat Inc.</h2>"; exit; }
-
-  /* CONNEXION */
-  $host = "127.0.0.1";
-  $db = "upc";
-  $user = "upc";
-  $password = "upc";
-  $charset = "utf8";
-  $dsn = "mysql:host=".$host.";dbname=".$db.";charset=".$charset;
-  $opt = [
-      PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-      PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-      PDO::ATTR_EMULATE_PREPARES   => false,
-  ];
-  $pdo = new PDO($dsn, $user, $password, $opt);
+  require_once('lib/utils.php');  
+  require_once('lib/header.php'); 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,24 +34,27 @@ if ($_COOKIE["BattatUPC"] === 0) { echo "<h2>Maison Battat Inc.</h2>"; exit; }
       </div>
      <hr>
     <?php
-      $projectManager = $_POST["pm"];
-      $brand = $_POST["brand"];
-      $packInfo = $_POST["pi"];
-      $privateLabel = $_POST["pl"];
-      $description = $_POST["description"];
+      $formObj = getFormInfo();  
+
+      /* Get the next Battat Number available for this category */
+      $rang = getProductLineById($formObj->brand, $pdo);
+
+      /* BUILD BATTAT NUMBER */
+      $battatNumber = createBattatNumber($rang, $formObj);
+         
     ?>
     <dl>
       <dt>Project Manager</dt>
     <?php
-      $param = $projectManager;
-      $sql = "SELECT name FROM product_managers WHERE code LIKE '%".$param."%'";
+      $param = $formObj->projectManager;
+      $sql = "SELECT name FROM product_managers WHERE code = '".$param."'";
       $st = $pdo->query($sql);
       $rang = $st->fetchObject();
     ?>
         <dd class="b"><?php echo $rang->name; ?></dd>
       <dt>Brand</dt>
     <?php
-      $param = $brand;
+      $param = $formObj->brand;
       $sql = "SELECT catName FROM product_lines WHERE id = ".$param;
       $st = $pdo->query($sql);
       $rang = $st->fetchObject();
@@ -83,21 +63,34 @@ if ($_COOKIE["BattatUPC"] === 0) { echo "<h2>Maison Battat Inc.</h2>"; exit; }
 
       <dt>Pack Info</dt>
     <?php
-      $param = $packInfo;
-      $sql = "SELECT description FROM pack_info WHERE code LIKE '%".$param."%'";
-      $st = $pdo->query($sql);
-      $rang = $st->fetchObject();
+      $param = $formObj->packInfo;
+      $piDescription = '';
+      if ($param) {
+        $sql = "SELECT description FROM pack_info WHERE code = '".$param."'";
+        $st = $pdo->query($sql);
+        $rang = $st->fetchObject();
+        $piDescription = $rang->description;
+      }      
+      
     ?>
-      <dd class="b"><?php echo $packInfo; ?> (<?php echo $rang->description; ?>)</dd>
+      <dd class="b"><?php echo $formObj->packInfo; ?> (<?php echo $piDescription; ?>)</dd>
       
       <dt>Private Label</dt>
-        <dd class="b"><?php echo $privateLabel; ?></dd>
+        <dd class="b"><?php echo $formObj->privateLabel; ?></dd>
       
       <dt>Description</dt>
-        <dd class="b"><?php echo $description; ?></dd>
+        <dd class="b"><?php echo $formObj->description; ?></dd>
     
     </dl>
+    <?php 
+      echo "<p>New Battat Number :  ".$battatNumber."</p>";
+      /* FIND NEXT UPC AVAILABLE */
+$upc = getUpc($pdo);
 
+echo "<hr /><p><a href=\"popupcode.php?upc=".$upc->upcCode."\" target=\"_blank\">Download Barcode</a>";
+      
+echo "<img src=\"svg.php?code=$upc->upcCode\" /></p><hr />";
+    ?>  
 <table>
   <tr>
     <td>
@@ -105,11 +98,11 @@ if ($_COOKIE["BattatUPC"] === 0) { echo "<h2>Maison Battat Inc.</h2>"; exit; }
     </td>
     <td>
   <form action="save.php" method="post">
-    <input type="hidden" name="pm" value="<?php echo $projectManager; ?>">
-    <input type="hidden" name="brand" value="<?php echo $brand; ?>">
-    <input type="hidden" name="pi" value="<?php echo $packInfo; ?>">
-    <input type="hidden" name="pl" value="<?php echo $privateLabel; ?>">
-    <input type="hidden" name="description" value="<?php echo $description; ?>">
+    <input type="hidden" name="pm" value="<?php echo $formObj->projectManager; ?>">
+    <input type="hidden" name="brand" value="<?php echo $formObj->brand; ?>">
+    <input type="hidden" name="pi" value="<?php echo $formObj->packInfo; ?>">
+    <input type="hidden" name="pl" value="<?php echo $formObj->privateLabel; ?>">
+    <input type="hidden" name="description" value="<?php echo $formObj->description; ?>">
     <input type="submit" value="Save">
   </form>
   </td>
